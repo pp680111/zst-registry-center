@@ -22,6 +22,13 @@ public class InstanceMetadata {
     private boolean status;
     private Map<String, String> attributes = new HashMap<>();
 
+    /**
+     * 获取服务实例的标识符
+     */
+    public String getIdentifier() {
+        return String.format("%s_%d_%s", host, port, context);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

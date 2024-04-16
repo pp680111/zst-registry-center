@@ -16,5 +16,5 @@ public interface RegistryService {
 
     List<InstanceMetadata> getAllInstances(String serviceId);
 
-
+    void renew(List<String> serviceId, InstanceMetadata instanceMeta);
 }

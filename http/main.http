@@ -1,0 +1,26 @@
+### 获取所有服务实例
+GET http://localhost:8444/getInstances?serviceId=abc
+
+### 注册服务实例
+PUT http://localhost:8444/register?serviceId=abc
+Content-Type: application/json
+
+{
+  "host": "127.0.0.1",
+  "port": 8081,
+  "attributes": {
+    "a": "B"
+  }
+}
+
+### 注销服务实例
+DELETE http://localhost:8444/unregister?serviceId=abc
+Content-Type: application/json
+
+{
+  "host": "127.0.0.1",
+  "port": 8080,
+  "attributes": {
+    "a": "B"
+  }
+}
