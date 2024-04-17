@@ -1,2 +1,6 @@
 server:
   port: 8444
+
+spring:
+  main:
+    allow-circular-references: true

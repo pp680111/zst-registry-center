@@ -1,7 +1,11 @@
 package com.zst.registrycenter.service;
 
+import com.zst.registrycenter.health.HealthChecker;
 import com.zst.registrycenter.model.InstanceMetadata;
+import com.zst.registrycenter.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -19,11 +23,10 @@ public class DefaultRegistryService implements RegistryService {
      * 以服务为单位记录版本号
      */
     private final Map<String, Long> versionMap = new ConcurrentHashMap<>();
-    /**
-     * 记录每个服务实例的探活时间
-     */
-    private final Map<String, Long> timestampMap = new ConcurrentHashMap<>();
     private final AtomicLong versionCounter = new AtomicLong(1);
+
+    @Autowired
+    private HealthChecker healthChecker;
 
 
     @Override
@@ -60,6 +63,18 @@ public class DefaultRegistryService implements RegistryService {
     }
 
     @Override
+    public void unregister(String serviceId, String instanceIdentifier) {
+        if (!instanceMap.containsKey(serviceId)) {
+            return;
+        }
+
+        List<InstanceMetadata> instances = instanceMap.get(serviceId);
+        instances.removeIf(instance -> StringUtils.equals(instance.getIdentifier(), instanceIdentifier));
+
+        versionMap.put(serviceId, versionCounter.getAndIncrement());
+    }
+
+    @Override
     public List<InstanceMetadata> getAllInstances(String serviceId) {
         return instanceMap.getOrDefault(serviceId, Collections.emptyList());
     }
@@ -69,7 +84,7 @@ public class DefaultRegistryService implements RegistryService {
         serviceIds.forEach(serviceId -> {
             if (instanceMap.containsKey(serviceId) && isInstanceExists(getAllInstances(serviceId), instanceMeta)) {
                 log.debug(MessageFormat.format("renew instance, serviceId = {0}, instanceId={1}", serviceId, instanceMeta.getIdentifier()));
-                timestampMap.put(MessageFormat.format("{0}@{1}", serviceId, instanceMeta.getIdentifier()), System.currentTimeMillis());
+                healthChecker.renew(serviceId, instanceMeta.getIdentifier());
             }
         });
     }

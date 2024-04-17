@@ -13,6 +13,7 @@ public interface RegistryService {
     void register(String serviceId, InstanceMetadata instanceMeta);
 
     void unregister(String serviceId, InstanceMetadata instanceMeta);
+    void unregister(String serviceId, String instanceIdentifier);
 
     List<InstanceMetadata> getAllInstances(String serviceId);
 
