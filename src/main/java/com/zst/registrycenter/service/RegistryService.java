@@ -3,6 +3,7 @@ package com.zst.registrycenter.service;
 import com.zst.registrycenter.model.InstanceMetadata;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Interface for registry service
@@ -18,4 +19,8 @@ public interface RegistryService {
     List<InstanceMetadata> getAllInstances(String serviceId);
 
     void renew(List<String> serviceId, InstanceMetadata instanceMeta);
+
+    Map<String, Long> getVersions(List<String> serviceIds);
+
+    Long getVersion(String serviceId);
 }

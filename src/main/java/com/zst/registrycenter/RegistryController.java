@@ -26,6 +26,11 @@ public class RegistryController {
         return registryService.getAllInstances(serviceId);
     }
 
+    @GetMapping("/version")
+    public Long getVersion(@RequestParam("serviceId") String serviceId) {
+        return registryService.getVersion(serviceId);
+    }
+
     @PutMapping("/register")
     public void register(@RequestParam("serviceId") String serviceId,
                          @RequestBody InstanceMetadata instanceMeta) {

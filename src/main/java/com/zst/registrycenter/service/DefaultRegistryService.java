@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -87,6 +88,23 @@ public class DefaultRegistryService implements RegistryService {
                 healthChecker.renew(serviceId, instanceMeta.getIdentifier());
             }
         });
+    }
+
+    @Override
+    public Map<String, Long> getVersions(List<String> serviceIds) {
+        Map<String, Long> result = new HashMap<>();
+        serviceIds.forEach(serviceId -> {
+            if (versionMap.containsKey(serviceId)) {
+                result.put(serviceId, versionMap.get(serviceId));
+            }
+        });
+
+        return result;
+    }
+
+    @Override
+    public Long getVersion(String serviceId) {
+        return versionMap.get(serviceId);
     }
 
     private boolean isInstanceExists(List<InstanceMetadata> currentInstances, InstanceMetadata newInstance) {
