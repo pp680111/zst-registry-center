@@ -1,11 +1,10 @@
 package com.zst.registrycenter.service;
 
-import com.zst.registrycenter.health.HealthChecker;
+import com.zst.registrycenter.health.registry.HealthChecker;
 import com.zst.registrycenter.model.InstanceMetadata;
 import com.zst.registrycenter.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -88,6 +87,11 @@ public class DefaultRegistryService implements RegistryService {
                 healthChecker.renew(serviceId, instanceMeta.getIdentifier());
             }
         });
+    }
+
+    @Override
+    public Long getVersion() {
+        return versionCounter.get();
     }
 
     @Override

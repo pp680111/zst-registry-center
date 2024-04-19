@@ -1,4 +1,4 @@
-package com.zst.registrycenter.health;
+package com.zst.registrycenter.health.registry;
 
 import com.zst.registrycenter.service.RegistryService;
 import jakarta.annotation.PostConstruct;

@@ -1,4 +1,4 @@
-package com.zst.registrycenter;
+package com.zst.registrycenter.transport;
 
 import com.zst.registrycenter.model.InstanceMetadata;
 import com.zst.registrycenter.service.RegistryService;

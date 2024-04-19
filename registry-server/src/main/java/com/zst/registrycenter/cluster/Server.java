@@ -6,7 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Server {
-    private String host;
+    private String ip;
     private int port;
     private String address;
     private boolean status = false;

@@ -20,7 +20,23 @@ public interface RegistryService {
 
     void renew(List<String> serviceId, InstanceMetadata instanceMeta);
 
+    /**
+     * 获取当前实例的版本号
+     *
+     */
+    Long getVersion();
+
+    /**
+     * 获取当前各服务的最新版本号
+     * @param serviceIds
+     * @return
+     */
     Map<String, Long> getVersions(List<String> serviceIds);
 
+    /**
+     * 获取指定服务的最新版本号
+     * @param serviceId
+     * @return
+     */
     Long getVersion(String serviceId);
 }
