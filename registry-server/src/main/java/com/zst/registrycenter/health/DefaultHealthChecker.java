@@ -14,6 +14,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 默认HealthCheck实现
+ */
 @Slf4j
 public class DefaultHealthChecker implements HealthChecker {
     @Autowired
