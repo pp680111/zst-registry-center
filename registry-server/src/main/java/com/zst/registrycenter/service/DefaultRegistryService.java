@@ -58,7 +58,7 @@ public class DefaultRegistryService implements RegistryService {
             instances.remove(instanceMeta);
             instanceMeta.setStatus(false);
 
-            versionMap.put(serviceId, versionCounter.getAndIncrement());
+            versionMap.put(serviceId, versionCounter.incrementAndGet());
         }
     }
 
@@ -71,7 +71,7 @@ public class DefaultRegistryService implements RegistryService {
         List<InstanceMetadata> instances = instanceMap.get(serviceId);
         instances.removeIf(instance -> StringUtils.equals(instance.getIdentifier(), instanceIdentifier));
 
-        versionMap.put(serviceId, versionCounter.getAndIncrement());
+        versionMap.put(serviceId, versionCounter.incrementAndGet());
     }
 
     @Override
