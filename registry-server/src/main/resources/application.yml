@@ -4,3 +4,8 @@ server:
 spring:
   main:
     allow-circular-references: true
+
+registry:
+  servers:
+    - 192.168.23.202:8444
+    - 192.168.23.202:8445

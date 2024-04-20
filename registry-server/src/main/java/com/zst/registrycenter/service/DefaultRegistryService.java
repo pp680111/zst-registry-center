@@ -1,6 +1,6 @@
 package com.zst.registrycenter.service;
 
-import com.zst.registrycenter.health.registry.HealthChecker;
+import com.zst.registrycenter.health.registry.RegistryHealthChecker;
 import com.zst.registrycenter.model.InstanceMetadata;
 import com.zst.registrycenter.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ public class DefaultRegistryService implements RegistryService {
     private final AtomicLong versionCounter = new AtomicLong(1);
 
     @Autowired
-    private HealthChecker healthChecker;
+    private RegistryHealthChecker registryHealthChecker;
 
 
     @Override
@@ -84,7 +84,7 @@ public class DefaultRegistryService implements RegistryService {
         serviceIds.forEach(serviceId -> {
             if (instanceMap.containsKey(serviceId) && isInstanceExists(getAllInstances(serviceId), instanceMeta)) {
                 log.debug(MessageFormat.format("renew instance, serviceId = {0}, instanceId={1}", serviceId, instanceMeta.getIdentifier()));
-                healthChecker.renew(serviceId, instanceMeta.getIdentifier());
+                registryHealthChecker.renew(serviceId, instanceMeta.getIdentifier());
             }
         });
     }

@@ -11,5 +11,5 @@ import java.util.List;
 @Setter
 @ConfigurationProperties(prefix = "registry")
 public class RegistryProperties {
-    private List<String> serverList = new ArrayList<>();
+    private List<String> servers = new ArrayList<>();
 }

@@ -3,10 +3,10 @@ package com.zst.registrycenter.cluster;
 import com.zst.registrycenter.config.RegistryProperties;
 import com.zst.registrycenter.service.RegistryService;
 import com.zst.registrycenter.utils.InetUtils;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +36,11 @@ public class Cluster {
         this.properties = properties;
     }
 
+    @PostConstruct
+    public void postConstruct() {
+        init();
+    }
+
     public List<Server> getServerList() {
         return serverList;
     }
@@ -46,16 +51,13 @@ public class Cluster {
         return currentServer;
     }
 
-    public void refreshServers(List<Server> serverList) {
-
-    }
-
     private void init() {
         parseServerListFromProperties();
+        prepareCurrentServer();
     }
 
     private void parseServerListFromProperties() {
-        List<String> propertiesServerList = properties.getServerList();
+        List<String> propertiesServerList = properties.getServers();
         serverList = propertiesServerList.stream().map(serverUrl -> {
             Server server = new Server();
             server.setAddress(serverUrl);

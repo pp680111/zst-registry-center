@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
  * 默认HealthCheck实现
  */
 @Slf4j
-public class DefaultHealthChecker implements HealthChecker {
+public class DefaultRegistryHealthChecker implements RegistryHealthChecker {
     @Autowired
     private RegistryService registryService;
     private ScheduledExecutorService healthCheckExecutor;
