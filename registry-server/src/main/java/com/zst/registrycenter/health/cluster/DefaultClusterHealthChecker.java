@@ -73,13 +73,18 @@ public class DefaultClusterHealthChecker implements ClusterHealthChecker {
         }
 
         log.debug("start running server {} health check", address);
-        Server responseServerInfo = getRemoteServerInfo(address);
-        if (responseServerInfo != null) {
-            server.setStatus(true);
-            server.setVersion(responseServerInfo.getVersion());
-            server.setLeader(responseServerInfo.isLeader());
+        try {
+            Server responseServerInfo = getRemoteServerInfo(address);
+            if (responseServerInfo != null) {
+                server.setStatus(true);
+                server.setVersion(responseServerInfo.getVersion());
+                server.setLeader(responseServerInfo.isLeader());
 
-            log.debug(MessageFormat.format("finish refresh server {0} info, {1}", address, server.toString()));
+                log.debug(MessageFormat.format("finish refresh server {0} info, {1}", address, server.toString()));
+            }
+        } catch (Exception e) {
+            log.error(MessageFormat.format("run server {0} health check error, set server status to disable", address), e);
+            server.setStatus(false);
         }
     }
 

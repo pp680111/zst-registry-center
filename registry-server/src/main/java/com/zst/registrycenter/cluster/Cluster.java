@@ -73,4 +73,8 @@ public class Cluster {
         server.setLeader(false);
         this.currentServer = server;
     }
+
+    private void electLeader() {
+
+    }
 }
