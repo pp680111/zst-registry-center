@@ -61,6 +61,8 @@ public class DefaultClusterHealthChecker implements ClusterHealthChecker {
         try {
             List<Server> targetServerList = cluster.getServerList();
             targetServerList.forEach(this::runCheckHealth);
+
+            electLeader();
         } catch (Exception e) {
             log.error("run check health error", e);
         }
@@ -99,5 +101,39 @@ public class DefaultClusterHealthChecker implements ClusterHealthChecker {
         } catch (Exception e) {
             throw new RuntimeException(MessageFormat.format("调用远端服务｛0｝时发生错误", address), e);
         }
+    }
+
+    private void electLeader() {
+        List<Server> existLeaders = cluster.getServerList()
+                .stream().filter(server -> server.isStatus() && server.isLeader()).toList();
+        if (existLeaders.isEmpty()) {
+            log.info("no available leader found, execute leader election");
+            doLeaderElection(cluster.getCurrentServer(), cluster.getServerList());
+        } else if (existLeaders.size() > 1) {
+            log.info("multi available leader found, reset leader status, execute leader election");
+            doLeaderElection(cluster.getCurrentServer(), cluster.getServerList());
+        }
+    }
+
+    private void doLeaderElection(Server self, List<Server> allServerList) {
+        Server newLeader = null;
+        for (Server candidate : allServerList) {
+            candidate.setLeader(false);
+
+            if (newLeader == null) {
+                newLeader = candidate;
+            } else {
+                if (candidate.getVersion() > newLeader.getVersion()) {
+                    newLeader = candidate;
+                }
+            }
+        }
+
+        if (newLeader == null) {
+            newLeader = self;
+        }
+
+        newLeader.setLeader(true);
+        log.info("leader election complete, new leader is {}", newLeader.toString());
     }
 }

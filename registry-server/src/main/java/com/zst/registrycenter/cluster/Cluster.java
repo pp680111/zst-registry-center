@@ -1,8 +1,9 @@
 package com.zst.registrycenter.cluster;
 
-import com.zst.registrycenter.config.RegistryProperties;
+import com.zst.registrycenter.config.properties.RegistryProperties;
 import com.zst.registrycenter.service.RegistryService;
 import com.zst.registrycenter.utils.InetUtils;
+import com.zst.registrycenter.utils.StringUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,15 +67,25 @@ public class Cluster {
     }
 
     private void prepareCurrentServer() {
+        String instanceIp = StringUtils.isNotEmpty(properties.getInstanceIp())
+                ? properties.getInstanceIp()
+                : InetUtils.I.findFirstNonLoopbackHostInfo().getIpAddress();
+
+        // 如果配置的server列表中已经有当前节点的话，那就直接复用
+        for (Server server : serverList) {
+            if (server.getIp().equals(instanceIp) && server.getPort() == port) {
+                this.currentServer = server;
+                return;
+            }
+        }
+
+        // 没有的话就新建一个，然后加入到serverList中
         Server server = new Server();
-        server.setIp(InetUtils.I.findFirstNonLoopbackHostInfo().getIpAddress());
+        server.setIp(instanceIp);
         server.setPort(port);
         server.setStatus(true);
         server.setLeader(false);
         this.currentServer = server;
-    }
-
-    private void electLeader() {
-
+        serverList.add(server);
     }
 }

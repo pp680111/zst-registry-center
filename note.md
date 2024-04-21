@@ -2,6 +2,12 @@
 * 客户端在首次全量获取时，初始化版本号
 * 版本号查的太多（超出阈值）可以直接全量获取
 
+DONE:
+* CLuster的server列表需要每个实例进行互相探活，使用http接口的方式，对外暴露一个http接口，返回当前Server信息，将返回的server信息写入到当前实例持有的Server列表中
+* 由于cluster的探活中调用的接口获取的server对象中的isLeader状态在选举时没有被更新，这里需要处理一下，要不就让currentServer对象放到server中，或者与server中的同一个引用，要不就选举时如果leader节点的地址等于当前节点的话，更新以下当前server的状态（前提是当前节点的ip需要能对的上serverlist中配置的当前节点的address）
+* 实现简单的选举算法，当本实例中没有一个存活的leader节点时，或者有多个leader节点，从存活的节点中挑选一个hashCode最小的节点作为leader节点
+
 
 TODO:
-* CLuster的server列表需要每个实例进行互相探活，使用http接口的方式，对外暴露一个http接口，返回当前Server信息，将返回的server信息写入到当前实例持有的Server列表中
+* 写一个获取当前cluster所有节点的接口，客户端可以通过配置一个或少数个节点的地址，然后通过http接口获取到当前cluster中所有的注册中心的节点信息列表
+* 尝试用gossip算法实现无主节点的模式

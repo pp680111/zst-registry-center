@@ -1,6 +1,7 @@
 package com.zst.registrycenter.config;
 
 import com.zst.registrycenter.cluster.Cluster;
+import com.zst.registrycenter.config.properties.RegistryProperties;
 import com.zst.registrycenter.health.cluster.ClusterHealthChecker;
 import com.zst.registrycenter.health.cluster.DefaultClusterHealthChecker;
 import com.zst.registrycenter.health.registry.DefaultRegistryHealthChecker;
