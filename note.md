@@ -6,13 +6,12 @@ DONE:
 * CLuster的server列表需要每个实例进行互相探活，使用http接口的方式，对外暴露一个http接口，返回当前Server信息，将返回的server信息写入到当前实例持有的Server列表中
 * 由于cluster的探活中调用的接口获取的server对象中的isLeader状态在选举时没有被更新，这里需要处理一下，要不就让currentServer对象放到server中，或者与server中的同一个引用，要不就选举时如果leader节点的地址等于当前节点的话，更新以下当前server的状态（前提是当前节点的ip需要能对的上serverlist中配置的当前节点的address）
 * 实现简单的选举算法，当本实例中没有一个存活的leader节点时，或者有多个leader节点，从存活的节点中挑选一个hashCode最小的节点作为leader节点
-
+* 把ClusterHealthChecker里面对其他服务节点发起http调用的地方改成并行的调用（比如用httpasyncclient的reactor异步模式），避免单个节点的故障影响其他节点的探活
 
 TODO:
 * 写一个获取当前cluster所有节点的接口，客户端可以通过配置一个或少数个节点的地址，然后通过http接口获取到当前cluster中所有的注册中心的节点信息列表
 * 尝试用gossip算法实现无主节点的模式
 * 代码结构还比较乱，需要整理一下
-* 把ClusterHealthChecker里面对其他服务节点发起http调用的地方改成并行的调用（比如用httpasyncclient的reactor异步模式），避免单个节点的故障影响其他节点的探活
 * ClusterHealthChecker探活时可以排除掉serverList里面自己这个节点
 * 试一下使用强外部分布式锁的方式来处理主节点的选举
 * 实现从主节点同步节点列表数据

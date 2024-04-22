@@ -17,8 +17,12 @@ import java.text.MessageFormat;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -26,10 +30,12 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class DefaultClusterHealthChecker implements ClusterHealthChecker {
-    private static final long HEALTH_CHECK_INTERVAL = Duration.ofSeconds(10).toMillis();
-    private static final long HTTP_HEALTH_CHECK_TIMEOUT = Duration.ofSeconds(5).toMillis();
+    private static final long HEALTH_CHECK_INTERVAL_MS = Duration.ofSeconds(10).toMillis();
+    private static final long HTTP_HEALTH_CHECK_TIMEOUT_MS = Duration.ofSeconds(5).toMillis();
+    private static final int DEFAULT_HEALTH_CHECK_THREAD_NUM = 10;
     private HttpInvoker httpInvoker;
     private ScheduledExecutorService healthCheckExecutor;
+    private ExecutorService healthCheckExecutorPool;
 
     @Autowired
     private Cluster cluster;
@@ -47,14 +53,33 @@ public class DefaultClusterHealthChecker implements ClusterHealthChecker {
     @Override
     public void start() {
         httpInvoker = new HttpInvoker();
+        healthCheckExecutorPool = new ThreadPoolExecutor(DEFAULT_HEALTH_CHECK_THREAD_NUM,
+                DEFAULT_HEALTH_CHECK_THREAD_NUM,
+                0,
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(),
+                new ThreadPoolExecutor.AbortPolicy());
+
         healthCheckExecutor = Executors.newSingleThreadScheduledExecutor();
-        healthCheckExecutor.scheduleAtFixedRate(this::runCheckHealth, 2 * HEALTH_CHECK_INTERVAL,
-                HEALTH_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
+        healthCheckExecutor.scheduleAtFixedRate(this::runCheckHealth, 2 * HEALTH_CHECK_INTERVAL_MS,
+                HEALTH_CHECK_INTERVAL_MS, TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void end() {
-        healthCheckExecutor.shutdown();
+        try {
+            healthCheckExecutorPool.shutdown();
+            healthCheckExecutorPool.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("shutdown health check executor pool error", e);
+        }
+
+        try {
+            healthCheckExecutor.shutdown();
+            healthCheckExecutor.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("shutdown health check executor error", e);
+        }
     }
 
     private void runCheckHealth() {
@@ -76,31 +101,38 @@ public class DefaultClusterHealthChecker implements ClusterHealthChecker {
 
         log.debug("start running server {} health check", address);
         try {
-            Server responseServerInfo = getRemoteServerInfo(address);
-            if (responseServerInfo != null) {
-                server.setStatus(true);
-                server.setVersion(responseServerInfo.getVersion());
-                server.setLeader(responseServerInfo.isLeader());
+            CompletableFuture<Server> remoteServerFuture = getRemoteServerInfo(address);
+            remoteServerFuture.thenAccept(responseServerInfo -> {
+                if (responseServerInfo != null) {
+                    server.setStatus(true);
+                    server.setVersion(responseServerInfo.getVersion());
+                    server.setLeader(responseServerInfo.isLeader());
 
-                log.debug(MessageFormat.format("finish refresh server {0} info, {1}", address, server.toString()));
-            }
+                    log.debug(MessageFormat.format("finish refresh server {0} info, {1}", address, server.toString()));
+                }
+            });
+            remoteServerFuture.get(HTTP_HEALTH_CHECK_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
+            if (e instanceof ExecutionException && e.getCause() != null) {
+                e = (Exception) e.getCause();
+            }
             log.error(MessageFormat.format("run server {0} health check error, set server status to disable", address), e);
             server.setStatus(false);
         }
     }
 
-    private Server getRemoteServerInfo(String address) {
-        try {
-            String url = MessageFormat.format("http://{0}/info", address);
-            CompletableFuture<HttpResponse> responseFuture = httpInvoker.doGet(url, null, null);
-            HttpResponse response = responseFuture.get(HTTP_HEALTH_CHECK_TIMEOUT, TimeUnit.MILLISECONDS);
+    private CompletableFuture<Server> getRemoteServerInfo(String address) {
+        String url = MessageFormat.format("http://{0}/info", address);
+        CompletableFuture<HttpResponse> responseFuture = httpInvoker.doGet(url, null, null);
 
-            String rawResponseContext = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-            return JSON.parseObject(rawResponseContext, Server.class);
-        } catch (Exception e) {
-            throw new RuntimeException(MessageFormat.format("调用远端服务｛0｝时发生错误", address), e);
-        }
+        return responseFuture.thenApplyAsync(response -> {
+            try {
+                String rawResponseContext = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+                return JSON.parseObject(rawResponseContext, Server.class);
+            } catch (Exception e) {
+                throw new RuntimeException(MessageFormat.format("解析远端服务｛0｝返回结果时发生错误", address), e);
+            }
+        }, healthCheckExecutorPool);
     }
 
     private void electLeader() {
