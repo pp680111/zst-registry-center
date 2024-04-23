@@ -6,10 +6,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * 表示注册中心集群的单个实例节点信息的类
+ */
 @Getter
 @Setter
 @ToString
-@EqualsAndHashCode(of = {"ip", "port", "address"})
+@EqualsAndHashCode(of = {"address"}) // lombok使用address的getter方法（自己重写后的）来生成hashcode和equals
 public class Server {
     private String ip;
     private int port;
@@ -52,15 +55,5 @@ public class Server {
         }
 
         return null;
-    }
-
-    public boolean equals(Server o) {
-        if (o == null) {
-            return false;
-        }
-
-        String otherAddress = o.getAddress();
-        String thisAddress = this.getAddress();
-        return thisAddress != null && thisAddress.equals(otherAddress);
     }
 }
