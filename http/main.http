@@ -7,7 +7,7 @@ Content-Type: application/json
 
 {
   "host": "127.0.0.1",
-  "port": 8082,
+  "port": 8081,
   "attributes": {
     "a": "B"
   }
@@ -27,3 +27,6 @@ Content-Type: application/json
 
 ### 获取服务版本
 GET http://localhost:8444/version?serviceId=abc
+
+### 获取服务实例的数据快照
+GET http://localhost:8444/snapshot

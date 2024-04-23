@@ -2,6 +2,7 @@ package com.zst.registrycenter.model;
 
 import com.zst.registrycenter.utils.StringUtils;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -15,11 +16,25 @@ import java.util.Objects;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
 public class InstanceMetadata {
     private String host;
     private int port;
     private String context = "/";
     private boolean status;
+
+    /**
+     * 用于复制实例数据的构造函数
+     * @param source
+     */
+    public InstanceMetadata(InstanceMetadata source) {
+        this.host = source.host;
+        this.port = source.port;
+        this.context = source.context;
+        this.status = source.status;
+        this.attributes.putAll(source.attributes);
+    }
+
     private Map<String, String> attributes = new HashMap<>();
 
     /**

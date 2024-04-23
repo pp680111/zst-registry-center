@@ -1,6 +1,7 @@
 package com.zst.registrycenter.transport;
 
 import com.zst.registrycenter.model.InstanceMetadata;
+import com.zst.registrycenter.model.ServerInstanceSnapshot;
 import com.zst.registrycenter.service.RegistryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,4 +44,8 @@ public class RegistryController {
         registryService.unregister(serviceId, instanceMeta);
     }
 
+    @GetMapping("/snapshot")
+    public ServerInstanceSnapshot snapshot() {
+        return registryService.generateSnapshot();
+    }
 }

@@ -1,6 +1,7 @@
 package com.zst.registrycenter.service;
 
 import com.zst.registrycenter.model.InstanceMetadata;
+import com.zst.registrycenter.model.ServerInstanceSnapshot;
 
 import java.util.List;
 import java.util.Map;
@@ -39,4 +40,10 @@ public interface RegistryService {
      * @return
      */
     Long getVersion(String serviceId);
+
+    /**
+     * 生成当前注册数据的快照
+     * @return
+     */
+    ServerInstanceSnapshot generateSnapshot();
 }

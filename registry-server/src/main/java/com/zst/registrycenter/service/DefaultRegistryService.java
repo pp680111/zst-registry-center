@@ -2,11 +2,13 @@ package com.zst.registrycenter.service;
 
 import com.zst.registrycenter.health.registry.RegistryHealthChecker;
 import com.zst.registrycenter.model.InstanceMetadata;
+import com.zst.registrycenter.model.ServerInstanceSnapshot;
 import com.zst.registrycenter.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,11 +16,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class DefaultRegistryService implements RegistryService {
+    private final static Duration SNAPSHOT_MAX_WAIT_TIME_MS = Duration.ofMillis(10_000L);
+    private final ReentrantLock snapshotLock = new ReentrantLock();
     private final Map<String, List<InstanceMetadata>> instanceMap = new ConcurrentHashMap<>();
-
     /**
      * 以服务为单位记录版本号
      */
@@ -32,13 +37,14 @@ public class DefaultRegistryService implements RegistryService {
     @Override
     public void register(String serviceId, InstanceMetadata instanceMeta) {
         // todo: 还需要补充对service的创建和检测
+        waitForSnapshotFinished(SNAPSHOT_MAX_WAIT_TIME_MS);
 
         List<InstanceMetadata> instances = instanceMap.computeIfAbsent(serviceId, k -> new ArrayList<>());
         if (!isInstanceExists(instances, instanceMeta)) {
             instances.add(instanceMeta);
             instanceMeta.setStatus(true);
 
-            versionMap.put(serviceId, versionCounter.getAndIncrement());
+            versionMap.put(serviceId, versionCounter.incrementAndGet());
             renew(Collections.singletonList(serviceId), instanceMeta);
 
             log.info("register instance, {}", instanceMeta);
@@ -52,6 +58,8 @@ public class DefaultRegistryService implements RegistryService {
         if (!instanceMap.containsKey(serviceId)) {
             return;
         }
+
+        waitForSnapshotFinished(SNAPSHOT_MAX_WAIT_TIME_MS);
 
         List<InstanceMetadata> instances = instanceMap.get(serviceId);
         if (isInstanceExists(instances, instanceMeta)) {
@@ -67,6 +75,8 @@ public class DefaultRegistryService implements RegistryService {
         if (!instanceMap.containsKey(serviceId)) {
             return;
         }
+
+        waitForSnapshotFinished(SNAPSHOT_MAX_WAIT_TIME_MS);
 
         List<InstanceMetadata> instances = instanceMap.get(serviceId);
         instances.removeIf(instance -> StringUtils.equals(instance.getIdentifier(), instanceIdentifier));
@@ -111,7 +121,42 @@ public class DefaultRegistryService implements RegistryService {
         return versionMap.get(serviceId);
     }
 
+    @Override
+    public ServerInstanceSnapshot generateSnapshot() {
+        if (!snapshotLock.tryLock()) {
+            throw new IllegalStateException("有快照正在生成中，无法重复执行");
+        }
+
+        try {
+            ServerInstanceSnapshot snapshot = new ServerInstanceSnapshot();
+
+            Map<String, List<InstanceMetadata>> ssInstanceMap = new HashMap<>();
+            instanceMap.forEach((serviceId, instances) -> {
+                ssInstanceMap.put(serviceId,
+                        instances.stream().map(InstanceMetadata::new).collect(Collectors.toList()));
+            });
+
+            snapshot.setInstanceMap(ssInstanceMap);
+            snapshot.setVersion(versionCounter.get());
+            snapshot.setVersionMap(new HashMap<>(versionMap));
+            return snapshot;
+        } catch (Exception e) {
+            throw new RuntimeException("生成快照时发生错误", e);
+        } finally {
+            snapshotLock.unlock();
+        }
+    }
+
     private boolean isInstanceExists(List<InstanceMetadata> currentInstances, InstanceMetadata newInstance) {
         return currentInstances.stream().anyMatch(i -> i.equals(newInstance));
+    }
+
+    private void waitForSnapshotFinished(Duration maxWaitDuration) {
+        if (this.snapshotLock.isLocked()) {
+            try {
+                this.snapshotLock.wait(maxWaitDuration.toMillis());
+            } catch (Exception e) {
+            }
+        }
     }
 }
