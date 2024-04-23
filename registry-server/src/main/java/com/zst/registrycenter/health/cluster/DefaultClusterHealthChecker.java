@@ -94,6 +94,10 @@ public class DefaultClusterHealthChecker implements ClusterHealthChecker {
     }
 
     private void runCheckHealth(Server server) {
+        if (cluster.getCurrentServer().equals(server)) {
+            return;
+        }
+
         String address = server.getAddress();
         if (StringUtils.isEmpty(address)) {
             throw new RuntimeException("Server address invalid");

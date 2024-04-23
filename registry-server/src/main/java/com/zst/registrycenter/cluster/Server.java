@@ -54,5 +54,13 @@ public class Server {
         return null;
     }
 
+    public boolean equals(Server o) {
+        if (o == null) {
+            return false;
+        }
 
+        String otherAddress = o.getAddress();
+        String thisAddress = this.getAddress();
+        return thisAddress != null && thisAddress.equals(otherAddress);
+    }
 }
