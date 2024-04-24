@@ -1,5 +1,6 @@
 package com.zst.registrycenter.service;
 
+import com.zst.registrycenter.cluster.Cluster;
 import com.zst.registrycenter.health.registry.RegistryHealthChecker;
 import com.zst.registrycenter.model.InstanceMetadata;
 import com.zst.registrycenter.model.ServerInstanceSnapshot;
@@ -33,10 +34,14 @@ public class DefaultRegistryService implements RegistryService {
 
     @Autowired
     private RegistryHealthChecker registryHealthChecker;
+    @Autowired
+    private Cluster cluster;
 
 
     @Override
     public void register(String serviceId, InstanceMetadata instanceMeta) {
+        checkWriteAuthority();
+
         // todo: 还需要补充对service的创建和检测
         waitForSnapshotFinished(SNAPSHOT_MAX_WAIT_TIME_MS);
 
@@ -56,6 +61,8 @@ public class DefaultRegistryService implements RegistryService {
 
     @Override
     public void unregister(String serviceId, InstanceMetadata instanceMeta) {
+        checkWriteAuthority();
+
         if (!instanceMap.containsKey(serviceId)) {
             return;
         }
@@ -73,6 +80,8 @@ public class DefaultRegistryService implements RegistryService {
 
     @Override
     public void unregister(String serviceId, String instanceIdentifier) {
+        checkWriteAuthority();
+
         if (!instanceMap.containsKey(serviceId)) {
             return;
         }
@@ -92,6 +101,8 @@ public class DefaultRegistryService implements RegistryService {
 
     @Override
     public void renew(List<String> serviceIds, InstanceMetadata instanceMeta) {
+        checkWriteAuthority();
+
         serviceIds.forEach(serviceId -> {
             if (instanceMap.containsKey(serviceId) && isInstanceExists(getAllInstances(serviceId), instanceMeta)) {
                 log.debug(MessageFormat.format("renew instance, serviceId = {0}, instanceId={1}", serviceId, instanceMeta.getIdentifier()));
@@ -180,6 +191,15 @@ public class DefaultRegistryService implements RegistryService {
             throw new RuntimeException("恢复快照时发生错误", e);
         } finally {
             snapshotLock.unlock();
+        }
+    }
+
+    /**
+     * 检查当前是否具有更新注册节点信息的权限
+     */
+    private void checkWriteAuthority() {
+        if (!cluster.isCurrentServerLeader()) {
+            throw new IllegalStateException("当前节点不是leader，无法更新注册信息");
         }
     }
 

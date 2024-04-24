@@ -46,10 +46,22 @@ public class Cluster {
         return serverList;
     }
 
+    /**
+     * 获取当前节点信息
+     * @return
+     */
     public Server getCurrentServer() {
         // TODO 这里可以改成事件通知的形式，由RegistryService主动通知其他监听着版本号变更的组件去更新版本号
         currentServer.setVersion(Math.toIntExact(Optional.ofNullable(registryService.getVersion()).orElse(-1L)));
         return currentServer;
+    }
+
+    /**
+     * 检查当前节点是否为集群的leader
+     * @return
+     */
+    public boolean isCurrentServerLeader() {
+        return currentServer.isLeader();
     }
 
     private void init() {
@@ -76,6 +88,7 @@ public class Cluster {
             if (server.getIp().equals(instanceIp) && server.getPort() == port) {
                 this.currentServer = server;
                 server.setStatus(true);
+                server.setLeader(true);
                 return;
             }
         }
@@ -85,7 +98,7 @@ public class Cluster {
         server.setIp(instanceIp);
         server.setPort(port);
         server.setStatus(true);
-        server.setLeader(false);
+        server.setLeader(true);
         this.currentServer = server;
         serverList.add(server);
     }
