@@ -28,8 +28,9 @@ public class ClusterSynchronizer {
 
     private ScheduledExecutorService scheduler;
     private HttpInvoker httpInvoker;
-    private RegistryService registryService;
 
+    @Autowired
+    private RegistryService registryService;
     @Autowired
     private Cluster cluster;
 
@@ -64,6 +65,15 @@ public class ClusterSynchronizer {
         }
 
         Server leaderServer = leader.get();
+        ServerInstanceSnapshot snapshot = getLeaderSnapshot(leaderServer);
+        if (snapshot == null) {
+            log.error("get leader snapshot failed");
+        }
+
+        registryService.restoreFromSnapshot(snapshot);
+    }
+
+    private ServerInstanceSnapshot getLeaderSnapshot(Server leaderServer) {
         String url = String.format("http://%s/snapshot", leaderServer.getAddress());
         ServerInstanceSnapshot snapshot = null;
         try {
@@ -76,6 +86,6 @@ public class ClusterSynchronizer {
             throw new RuntimeException("get leader server snapshot failed", e);
         }
 
-        // TODO 调用registryService，还原snapshot
+        return snapshot;
     }
 }

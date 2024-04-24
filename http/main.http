@@ -1,5 +1,5 @@
 ### 获取所有服务实例
-GET http://localhost:8444/getInstances?serviceId=abc
+GET http://localhost:8445/getInstances?serviceId=abc
 
 ### 注册服务实例
 PUT http://localhost:8444/register?serviceId=abc

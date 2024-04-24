@@ -46,4 +46,10 @@ public interface RegistryService {
      * @return
      */
     ServerInstanceSnapshot generateSnapshot();
+
+    /**
+     * 从快照中恢复注册数据
+     * @param snapshot
+     */
+    void restoreFromSnapshot(ServerInstanceSnapshot snapshot);
 }

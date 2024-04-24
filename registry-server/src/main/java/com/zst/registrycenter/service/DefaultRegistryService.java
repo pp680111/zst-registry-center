@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -142,6 +143,41 @@ public class DefaultRegistryService implements RegistryService {
             return snapshot;
         } catch (Exception e) {
             throw new RuntimeException("生成快照时发生错误", e);
+        } finally {
+            snapshotLock.unlock();
+        }
+    }
+
+    @Override
+    public void restoreFromSnapshot(ServerInstanceSnapshot snapshot) {
+        if (snapshot == null) {
+            throw new IllegalArgumentException();
+        }
+
+        try {
+            if (!snapshotLock.tryLock(SNAPSHOT_MAX_WAIT_TIME_MS.toMillis(), TimeUnit.MILLISECONDS)) {
+                throw new IllegalStateException("获取快照锁失败");
+            }
+        } catch (InterruptedException e) {
+            if (!snapshotLock.isHeldByCurrentThread()) {
+                throw new IllegalStateException("获取快照锁失败");
+            }
+        }
+
+        try {
+            this.instanceMap.clear();
+            if (snapshot.getInstanceMap() != null) {
+                this.instanceMap.putAll(snapshot.getInstanceMap());
+            }
+
+            this.versionMap.clear();
+            if (snapshot.getVersionMap() != null) {
+                this.versionMap.putAll(snapshot.getVersionMap());
+            }
+
+            this.versionCounter.set(snapshot.getVersion());
+        } catch (Exception e) {
+            throw new RuntimeException("恢复快照时发生错误", e);
         } finally {
             snapshotLock.unlock();
         }
