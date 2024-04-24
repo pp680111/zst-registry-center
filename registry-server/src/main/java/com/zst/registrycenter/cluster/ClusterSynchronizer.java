@@ -65,6 +65,12 @@ public class ClusterSynchronizer {
         }
 
         Server leaderServer = leader.get();
+
+        if (leaderServer.equals(cluster.getCurrentServer())) {
+            log.debug("im cluster leader, skip running synchronize");
+            return;
+        }
+
         ServerInstanceSnapshot snapshot = getLeaderSnapshot(leaderServer);
         if (snapshot == null) {
             log.error("get leader snapshot failed");
