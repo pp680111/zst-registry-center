@@ -75,6 +75,7 @@ public class Cluster {
         for (Server server : serverList) {
             if (server.getIp().equals(instanceIp) && server.getPort() == port) {
                 this.currentServer = server;
+                server.setStatus(true);
                 return;
             }
         }
