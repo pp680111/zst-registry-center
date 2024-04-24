@@ -71,12 +71,17 @@ public class ClusterSynchronizer {
             return;
         }
 
-        ServerInstanceSnapshot snapshot = getLeaderSnapshot(leaderServer);
-        if (snapshot == null) {
-            log.error("get leader snapshot failed");
+        try {
+            ServerInstanceSnapshot snapshot = getLeaderSnapshot(leaderServer);
+            if (snapshot == null) {
+                log.error("get leader snapshot failed");
+            }
+
+            registryService.restoreFromSnapshot(snapshot);
+        } catch (Exception e) {
+            log.error("synchronize failed", e);
         }
 
-        registryService.restoreFromSnapshot(snapshot);
     }
 
     private ServerInstanceSnapshot getLeaderSnapshot(Server leaderServer) {
