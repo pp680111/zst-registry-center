@@ -30,3 +30,6 @@ GET http://localhost:8445/version?serviceId=abc
 
 ### 获取服务实例的数据快照
 GET http://localhost:8444/snapshot
+
+### 获取所有集群节点实例
+GET http://localhost:8444/clusterServerList

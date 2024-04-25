@@ -24,4 +24,9 @@ public class ClusterController {
     public Server info() {
         return cluster.getCurrentServer();
     }
+
+    @GetMapping("/clusterServerList")
+    public List<Server> clusterServerList() {
+        return cluster.getServerList();
+    }
 }
