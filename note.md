@@ -26,3 +26,4 @@ TODO:
 * 重构一下实例变更数据存储方式，尝试使用事件存储的思维来处理，以事件堆叠出一个视图，一个事件一个version，太长的部分就定时压缩
 * 建立一个client库，提供给之前做的rpc项目集成
   * 客户端需要记录version，根据server端的version是否变化来判断吧是否执行fetchAll
+  * rpc那边写一个adapter类，用来适配这个register项目，然后由rpc-core引入此依赖
