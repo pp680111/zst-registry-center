@@ -1,8 +1,8 @@
 ### 获取所有服务实例
-GET http://localhost:8445/getInstances?serviceId=abc
+GET http://localhost:8444/getInstances/abc
 
 ### 注册服务实例
-PUT http://localhost:8445/register?serviceId=abc
+PUT http://localhost:8444/register/abc
 Content-Type: application/json
 
 {
@@ -33,3 +33,15 @@ GET http://localhost:8444/snapshot
 
 ### 获取所有集群节点实例
 GET http://localhost:8444/clusterServerList
+
+### 刷新节点状态
+POST http://localhost:8444/renew?serviceId=abc
+Content-Type: application/json
+
+{
+  "host": "127.0.0.1",
+  "port": 8082,
+  "attributes": {
+    "a": "B"
+  }
+}
