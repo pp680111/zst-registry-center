@@ -19,7 +19,7 @@ public interface RegistryService {
 
     List<InstanceMetadata> getAllInstances(String serviceId);
 
-    void renew(List<String> serviceId, InstanceMetadata instanceMeta);
+    void renew(String serviceId, InstanceMetadata instanceMeta);
 
     /**
      * 获取当前实例的版本号

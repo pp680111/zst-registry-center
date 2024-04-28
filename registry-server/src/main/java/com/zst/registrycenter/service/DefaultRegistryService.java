@@ -51,7 +51,7 @@ public class DefaultRegistryService implements RegistryService {
             instanceMeta.setStatus(true);
 
             versionMap.put(serviceId, versionCounter.incrementAndGet());
-            renew(Collections.singletonList(serviceId), instanceMeta);
+            renew(serviceId, instanceMeta);
 
             log.info("register instance, {}", instanceMeta);
         } else {
@@ -100,15 +100,13 @@ public class DefaultRegistryService implements RegistryService {
     }
 
     @Override
-    public void renew(List<String> serviceIds, InstanceMetadata instanceMeta) {
+    public void renew(String serviceId, InstanceMetadata instanceMeta) {
         checkWriteAuthority();
 
-        serviceIds.forEach(serviceId -> {
-            if (instanceMap.containsKey(serviceId) && isInstanceExists(getAllInstances(serviceId), instanceMeta)) {
-                log.debug(MessageFormat.format("renew instance, serviceId = {0}, instanceId={1}", serviceId, instanceMeta.getIdentifier()));
-                registryHealthChecker.renew(serviceId, instanceMeta.getIdentifier());
-            }
-        });
+        if (instanceMap.containsKey(serviceId) && isInstanceExists(getAllInstances(serviceId), instanceMeta)) {
+            log.debug(MessageFormat.format("renew instance, serviceId = {0}, instanceId={1}", serviceId, instanceMeta.getIdentifier()));
+            registryHealthChecker.renew(serviceId, instanceMeta.getIdentifier());
+        }
     }
 
     @Override

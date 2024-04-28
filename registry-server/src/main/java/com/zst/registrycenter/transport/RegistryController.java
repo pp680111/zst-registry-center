@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -53,8 +52,8 @@ public class RegistryController {
     }
 
     @PostMapping("/renew")
-    public void renew(@RequestParam("serviceId") String[] serviceId,
+    public void renew(@RequestParam("serviceId") String serviceId,
                       @RequestBody InstanceMetadata instanceMeta) {
-        registryService.renew(Arrays.asList(serviceId), instanceMeta);
+        registryService.renew(serviceId, instanceMeta);
     }
 }
