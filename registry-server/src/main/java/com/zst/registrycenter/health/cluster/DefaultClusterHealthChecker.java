@@ -153,7 +153,7 @@ public class DefaultClusterHealthChecker implements ClusterHealthChecker {
 
     private void doLeaderElection(Server self, List<Server> allServerList) {
         Server newLeader = null;
-        List<Server> candidateServers = allServerList.stream().filter(s -> !s.isLeader() && s.isStatus()).toList();
+        List<Server> candidateServers = allServerList.stream().filter(Server::isStatus).toList();
         for (Server candidate : candidateServers) {
             candidate.setLeader(false);
 
