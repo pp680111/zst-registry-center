@@ -8,6 +8,7 @@
 
     <logger name="com.zst.registrycenter.health.cluster.DefaultClusterHealthChecker" level="debug" />
     <logger name="com.zst.registrycenter.cluster.ClusterSynchronizer" level="debug" />
+    <logger name="com.zst.registrycenter.service.DefaultRegistryService" level="debug" />
 
     <root level="info">
         <appender-ref ref="STDOUT" />

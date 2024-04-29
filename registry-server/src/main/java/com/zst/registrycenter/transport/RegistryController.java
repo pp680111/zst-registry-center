@@ -24,18 +24,18 @@ public class RegistryController {
     @Autowired
     private RegistryService registryService;
 
-    @GetMapping("/getInstances/{serviceId}")
-    public List<InstanceMetadata> getInstances(@PathVariable("serviceId") String serviceId) {
+    @GetMapping("/getInstances")
+    public List<InstanceMetadata> getInstances(@RequestParam("serviceId") String serviceId) {
         return registryService.getAllInstances(serviceId);
     }
 
-    @GetMapping("/version/{serviceId}")
-    public Long getVersion(@PathVariable("serviceId") String serviceId) {
+    @GetMapping("/version")
+    public Long getVersion(@RequestParam("serviceId") String serviceId) {
         return registryService.getVersion(serviceId);
     }
 
-    @PutMapping("/register/{serviceId}")
-    public void register(@PathVariable("serviceId") String serviceId,
+    @PutMapping("/register")
+    public void register(@RequestParam("serviceId") String serviceId,
                          @RequestBody InstanceMetadata instanceMeta) {
         registryService.register(serviceId, instanceMeta);
     }

@@ -27,3 +27,4 @@ TODO:
   * rpc那边写一个adapter类，用来适配这个register项目，然后由rpc-core引入此依赖,adapter类要实现原有的RegistryCenter接口的所有方法，然后通过spring的自动配置机制声明为bean
   * 把原本的zkRegistryCenter也拆成adapter库
   * 把注册中心的获取版本的请求改成那种会会挂起一段时间的长轮询请求，在等待时间内如果版本发生了变化，那么就返回新的版本，可以有效节省网络通信开销
+* renew接口运行时发现instanceMap里面没有数据，要检查下为什么

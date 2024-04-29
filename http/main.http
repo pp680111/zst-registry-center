@@ -1,8 +1,8 @@
 ### 获取所有服务实例
-GET http://localhost:8444/getInstances/abc
+GET http://localhost:8445/getInstances?serviceId=rpc-01_default_dev_com_zst_rpc_demo_api_UserService
 
 ### 注册服务实例
-PUT http://localhost:8444/register/abc
+PUT http://localhost:8444/register?serviceId=abc
 Content-Type: application/json
 
 {
